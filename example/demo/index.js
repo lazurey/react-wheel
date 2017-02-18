@@ -4,16 +4,20 @@ class App extends React.Component {
     this.state = {
       count: 100
     }
+  }
+
+  componentDidMount() {
+    console.log('component did mounting')
     setInterval(() => {
       this.setState({ count: this.state.count + 1})
-    }, 3000)
+    }, 1000)
   }
 
   render() {
     return (
       <div>
         <p>This is my React Counter { this.props.name }</p>
-        <p>hahah</p>
+        <p>App count: {this.state.count}</p>
         <Counter name="ccccccc" parentCount={this.state.count} />
       </div>
     )
@@ -23,16 +27,12 @@ class App extends React.Component {
 class Counter extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {
-      count: 0
-    }
   }
 
   render() {
     return (
       <div>
         <h3>My name is { this.props.name }</h3>
-        <p>Count: { this.state.count }</p>
         <p>parentCount: { this.props.parentCount }</p>
       </div>
     )

@@ -7,7 +7,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var isClass = function isClass(type) {
-  return !!type.prototype && !!type.prototype.isCompositeComponent;
+  return !!type.prototype && !!type.prototype._compositeInstance;
 };
 
 var isHostElement = function isHostElement(type) {
@@ -39,16 +39,33 @@ var CompositeComponent = function () {
           type = _currentElement.type,
           props = _currentElement.props;
 
-      var children = props.children || [];
 
       var publicInstance = void 0,
           renderedComponent = void 0;
       publicInstance = new type(props);
       publicInstance.props = props;
-      renderedComponent = publicInstance.render();
+      publicInstance._compositeInstance = this;
       this.publicInstance = publicInstance;
 
+      renderedComponent = publicInstance.render();
+      this.renderedComponent = renderedComponent;
+
+      if (!!publicInstance.componentDidMount && typeof publicInstance.componentDidMount === 'function') {
+        publicInstance.componentDidMount();
+      }
+
       return renderedComponent;
+    }
+  }, {
+    key: 'receive',
+    value: function receive(oldState, newState) {
+      var publicInstance = this.getPublicInstance();
+      var previousRender = this.renderedComponent;
+      var newRender = publicInstance.render();
+
+      previousRender.innerHTML = newRender.innerHTML;
+
+      this.renderedComponent = previousRender;
     }
   }]);
 
@@ -65,6 +82,11 @@ var HostComponent = function () {
   }
 
   _createClass(HostComponent, [{
+    key: 'getHostNode',
+    value: function getHostNode() {
+      return this.node;
+    }
+  }, {
     key: 'getPublicInstance',
     value: function getPublicInstance() {
       return this.node;
@@ -117,6 +139,7 @@ window.React = {
       key: 'setState',
       value: function setState(newState) {
         this.state = Object.assign({}, this.state, newState);
+        this._compositeInstance.receive(this.state, newState);
       }
     }]);
 
@@ -128,7 +151,6 @@ window.React = {
     }
 
     var props = !!config ? _extends({}, config, { children: children }) : { children: children };
-    console.log('in createElement', type);
     var element = instantiateComponent({ type: type, props: props });
     return element.mount();
   }

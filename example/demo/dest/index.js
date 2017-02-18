@@ -19,13 +19,20 @@ var App = function (_React$Component) {
     _this.state = {
       count: 100
     };
-    setInterval(function () {
-      _this.setState({ count: _this.state.count + 1 });
-    }, 3000);
     return _this;
   }
 
   _createClass(App, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      console.log('component did mounting');
+      setInterval(function () {
+        _this2.setState({ count: _this2.state.count + 1 });
+      }, 1000);
+    }
+  }, {
     key: "render",
     value: function render() {
       return React.createElement(
@@ -40,7 +47,8 @@ var App = function (_React$Component) {
         React.createElement(
           "p",
           null,
-          "hahah"
+          "App count: ",
+          this.state.count
         ),
         React.createElement(Counter, { name: "ccccccc", parentCount: this.state.count })
       );
@@ -56,12 +64,7 @@ var Counter = function (_React$Component2) {
   function Counter(props) {
     _classCallCheck(this, Counter);
 
-    var _this2 = _possibleConstructorReturn(this, (Counter.__proto__ || Object.getPrototypeOf(Counter)).call(this, props));
-
-    _this2.state = {
-      count: 0
-    };
-    return _this2;
+    return _possibleConstructorReturn(this, (Counter.__proto__ || Object.getPrototypeOf(Counter)).call(this, props));
   }
 
   _createClass(Counter, [{
@@ -75,12 +78,6 @@ var Counter = function (_React$Component2) {
           null,
           "My name is ",
           this.props.name
-        ),
-        React.createElement(
-          "p",
-          null,
-          "Count: ",
-          this.state.count
         ),
         React.createElement(
           "p",

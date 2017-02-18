@@ -1,4 +1,4 @@
-const isClass = type => (!!type.prototype && !!type.prototype.isCompositeComponent)
+const isClass = type => (!!type.prototype && !!type.prototype._compositeInstance)
 
 const isHostElement = type => typeof type !== 'function'
 
@@ -14,18 +14,34 @@ class CompositeComponent {
   getPublicInstance() {
     return this.publicInstance
   }
-  
+
   mount() {
     const { type, props } = this.currentElement
-    const children = props.children || []
     
     let publicInstance, renderedComponent
     publicInstance = new type(props)
     publicInstance.props = props
-    renderedComponent = publicInstance.render()
+    publicInstance._compositeInstance = this
     this.publicInstance = publicInstance
 
+    renderedComponent = publicInstance.render()
+    this.renderedComponent = renderedComponent
+
+    if (!!publicInstance.componentDidMount && typeof publicInstance.componentDidMount === 'function') {
+      publicInstance.componentDidMount()
+    }
+    
     return renderedComponent
+  }
+
+  receive(oldState, newState) {
+    const publicInstance = this.getPublicInstance()
+    const previousRender = this.renderedComponent
+    const newRender = publicInstance.render()
+    
+    previousRender.innerHTML = newRender.innerHTML
+
+    this.renderedComponent = previousRender
   }
 }
 
@@ -34,6 +50,10 @@ class HostComponent {
     this.currentElement = element
     this.renderedChildren = []
     this.node = null
+  }
+
+  getHostNode() {
+    return this.node
   }
 
   getPublicInstance() {
@@ -75,11 +95,11 @@ window.React = {
     }
     setState(newState) {
       this.state = Object.assign({}, this.state, newState)
+      this._compositeInstance.receive(this.state, newState)
     }
   },
   createElement: (type, config, ...children) => {
     const props = (!!config) ? { ...config, children } : { children }
-    console.log('in createElement' , type)
     const element = instantiateComponent({ type, props })
     return element.mount()
   }
