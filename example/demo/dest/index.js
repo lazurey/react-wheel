@@ -11,10 +11,18 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var App = function (_React$Component) {
   _inherits(App, _React$Component);
 
-  function App() {
+  function App(props) {
     _classCallCheck(this, App);
 
-    return _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).apply(this, arguments));
+    var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+
+    _this.state = {
+      count: 100
+    };
+    setInterval(function () {
+      _this.setState({ count: _this.state.count + 1 });
+    }, 3000);
+    return _this;
   }
 
   _createClass(App, [{
@@ -34,7 +42,7 @@ var App = function (_React$Component) {
           null,
           "hahah"
         ),
-        React.createElement(Counter, { name: "ccccccc" })
+        React.createElement(Counter, { name: "ccccccc", parentCount: this.state.count })
       );
     }
   }]);
@@ -53,9 +61,6 @@ var Counter = function (_React$Component2) {
     _this2.state = {
       count: 0
     };
-    setInterval(function () {
-      _this2.setState({ count: _this2.state.count + 1 });
-    }, 10000);
     return _this2;
   }
 
@@ -76,6 +81,12 @@ var Counter = function (_React$Component2) {
           null,
           "Count: ",
           this.state.count
+        ),
+        React.createElement(
+          "p",
+          null,
+          "parentCount: ",
+          this.props.parentCount
         )
       );
     }
@@ -85,4 +96,4 @@ var Counter = function (_React$Component2) {
 }(React.Component);
 
 ReactDOM.render(React.createElement(App, { name: "kkkkk" }), document.getElementById('root'));
-// ReactDOM.render((<div><h3>ddd</h3><p>ksksks</p></div>), document.getElementById('root'));
+// ReactDOM.render((<div id="haha"><h3>ddd</h3><p>ksksks</p></div>), document.getElementById('root'));

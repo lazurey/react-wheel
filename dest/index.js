@@ -1,34 +1,98 @@
 'use strict';
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var isClass = function isClass(type) {
-  return !!type.prototype && !!type.prototype.isReactComponent;
+  return !!type.prototype && !!type.prototype.isCompositeComponent;
 };
 
-// class Component {
+var isHostElement = function isHostElement(type) {
+  return typeof type !== 'function';
+};
 
-// }
+var instantiateComponent = function instantiateComponent(element) {
+  return isHostElement(element.type) ? new HostComponent(element) : new CompositeComponent(element);
+};
+
+var CompositeComponent = function () {
+  function CompositeComponent(element) {
+    _classCallCheck(this, CompositeComponent);
+
+    this.currentElement = element;
+    this.renderedComponent = null;
+    this.publicInstance = null;
+  }
+
+  _createClass(CompositeComponent, [{
+    key: 'getPublicInstance',
+    value: function getPublicInstance() {
+      return this.publicInstance;
+    }
+  }, {
+    key: 'mount',
+    value: function mount() {
+      var _currentElement = this.currentElement,
+          type = _currentElement.type,
+          props = _currentElement.props;
+
+      var children = props.children || [];
+
+      var publicInstance = void 0,
+          renderedComponent = void 0;
+      publicInstance = new type(props);
+      publicInstance.props = props;
+      renderedComponent = publicInstance.render();
+      this.publicInstance = publicInstance;
+
+      return renderedComponent;
+    }
+  }]);
+
+  return CompositeComponent;
+}();
 
 var HostComponent = function () {
-  function HostComponent(props) {
+  function HostComponent(element) {
     _classCallCheck(this, HostComponent);
 
-    this.props = props;
+    this.currentElement = element;
+    this.renderedChildren = [];
+    this.node = null;
   }
 
   _createClass(HostComponent, [{
-    key: 'render',
-    value: function render() {}
+    key: 'getPublicInstance',
+    value: function getPublicInstance() {
+      return this.node;
+    }
+  }, {
+    key: 'mount',
+    value: function mount() {
+      var _currentElement2 = this.currentElement,
+          type = _currentElement2.type,
+          props = _currentElement2.props;
+
+      var children = props.children || [];
+      if (!Array.isArray(children)) {
+        children = [children];
+      }
+      var node = document.createElement(type);
+      children.forEach(function (child) {
+        node.append(child);
+      });
+      this.node = node;
+      return node;
+    }
   }]);
 
   return HostComponent;
 }();
 
 var mount = function mount(type, config, children) {
-  console.log('mounting ---', type, children);
   if (typeof type === 'function') {
     var comp = new type(config);
     return comp.render();
@@ -52,7 +116,6 @@ window.React = {
     _createClass(Component, [{
       key: 'setState',
       value: function setState(newState) {
-        console.log('setting state ', newState);
         this.state = Object.assign({}, this.state, newState);
       }
     }]);
@@ -64,11 +127,11 @@ window.React = {
       children[_key - 2] = arguments[_key];
     }
 
-    var renderedComponent = mount(type, config, children);
-    console.log(renderedComponent);
-    return renderedComponent;
+    var props = !!config ? _extends({}, config, { children: children }) : { children: children };
+    console.log('in createElement', type);
+    var element = instantiateComponent({ type: type, props: props });
+    return element.mount();
   }
-
 };
 
 window.ReactDOM = {
